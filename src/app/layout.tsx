@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import { ThemeProvider } from "next-themes";
+import { ThemeProvider } from "@/providers/theme-provider";
 import "./globals.css";
+import ConvexClientProvider from "@/providers/convex-client-provider";
+
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -18,9 +20,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-      <ThemeProvider attribute='class' defaultTheme='system' enableSystem 
-      disableTransitionOnChange>
+      <ThemeProvider attribute='class' defaultTheme='system' enableSystem disableTransitionOnChange>
+        <ConvexClientProvider>
 	        {children}
+        </ConvexClientProvider>
       </ThemeProvider>
       </body>
     </html>
