@@ -19,4 +19,11 @@ export default defineSchema({
         groupImage: v.optional(v.string()),
         admin: v.optional(v.string()),
     }),
+
+    messages: defineTable({
+        conversation: v.id("conversations"),
+        sender: v.string(),//chatgpt
+        content: v.string(),
+        messageType: v.union(v.literal("text"), v.literal("image"), v.literal("video"), v.literal("file")),
+    }).index("by_conversation", ["conversation"]),
 });
