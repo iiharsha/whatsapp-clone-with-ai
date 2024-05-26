@@ -3,7 +3,7 @@ import { Inter } from "next/font/google";
 import { ThemeProvider } from "@/providers/theme-provider";
 import "./globals.css";
 import ConvexClientProvider from "@/providers/convex-client-provider";
-
+import { Toaster } from "react-hot-toast";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -22,7 +22,8 @@ export default function RootLayout({
       <body className={inter.className}>
       <ThemeProvider attribute='class' defaultTheme='system' enableSystem disableTransitionOnChange>
         <ConvexClientProvider>
-	        {children}
+          {children}
+          <Toaster />
         </ConvexClientProvider>
       </ThemeProvider>
       </body>
