@@ -28,3 +28,18 @@ export const useConversationStore = create<ConversationStore>((set)  => ({
     setSelectedConversation: (conversation) => set({ selectedConversation: conversation }),
 }));
 
+export interface IMessage {
+    _id: string;
+    content: string;
+    _creationTime: number;
+    messageType: "text" | "image" | "video" | "file";
+    sender: {
+        _id: Id<"users">;
+        image: string;
+        name?: string;
+        tokenIdentifier: string;
+        _creationTime: number;
+        email: string;
+        isOnline: boolean;
+    };
+}
