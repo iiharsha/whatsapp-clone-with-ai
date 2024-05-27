@@ -45,6 +45,7 @@ export const createConversation = mutation({
         return conversationId;
     },
 });
+
 export const getMyConversations = query({
 	args: {},
 	handler: async (ctx, args) => {
@@ -99,4 +100,4 @@ export const getMyConversations = query({
 
 export const generateUploadUrl = mutation(async (ctx) => {
     return await ctx.storage.generateUploadUrl();
-})
+});

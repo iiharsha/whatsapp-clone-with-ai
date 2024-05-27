@@ -33,6 +33,8 @@ const UserListDialog = () => {
     const generateUploadUrl = useMutation(api.conversations.generateUploadUrl);
     const me = useQuery(api.users.getMe);
     const users = useQuery(api.users.getUsers);
+
+	const { setSelectedConversation } = useConversationStore();
     const handleCreateConversation = async () => {
         if(selectedUsers.length === 0 ) return;
         setIsLoading(true);
@@ -41,7 +43,7 @@ const UserListDialog = () => {
 
             let conversationId;
             if(!isGroup) {
-                conversationId =await createConversation({
+                conversationId = await createConversation({
                     participants:[...selectedUsers,me?._id!],
                     isGroup: false
                 })
