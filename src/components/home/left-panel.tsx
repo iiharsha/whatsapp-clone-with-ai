@@ -62,4 +62,4 @@ const LeftPanel = () => {
 		</div>
 	);
 };
-export default LeftPanel;
+export default LeftPanel;	
