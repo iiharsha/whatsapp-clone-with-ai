@@ -17,6 +17,7 @@ import { Id } from "../../../convex/_generated/dataModel";
 import { api } from "../../../convex/_generated/api";
 import { useMutation, useQuery } from 'convex/react';
 import toast from "react-hot-toast";
+import { useConversationStore } from "@/store/chat-store";
 
 const UserListDialog = () => {
 	const [selectedUsers, setSelectedUsers] = useState<Id<"users">[]>([]);
