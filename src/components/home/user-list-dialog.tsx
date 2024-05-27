@@ -3,7 +3,7 @@ import Image from "next/image";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
 	Dialog,
-    DialogClose,
+	DialogClose,
 	DialogContent,
 	DialogDescription,
 	DialogHeader,
@@ -14,8 +14,8 @@ import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { ImageIcon, MessageSquareDiff } from "lucide-react";
 import { Id } from "../../../convex/_generated/dataModel";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
-import { useMutation, useQuery } from 'convex/react';
 import toast from "react-hot-toast";
 import { useConversationStore } from "@/store/chat-store";
 
@@ -27,68 +27,78 @@ const UserListDialog = () => {
 	const [renderedImage, setRenderedImage] = useState("");
 
 	const imgRef = useRef<HTMLInputElement>(null);
-    const dialogCloseRef = useRef<HTMLButtonElement>(null); 
+	const dialogCloseRef = useRef<HTMLButtonElement>(null);
 
-    const createConversation = useMutation(api.conversations.createConversation);
-    const generateUploadUrl = useMutation(api.conversations.generateUploadUrl);
-    const me = useQuery(api.users.getMe);
-    const users = useQuery(api.users.getUsers);
+	const createConversation = useMutation(api.conversations.createConversation);
+	const generateUploadUrl = useMutation(api.conversations.generateUploadUrl);
+	const me = useQuery(api.users.getMe);
+	const users = useQuery(api.users.getUsers);
 
 	const { setSelectedConversation } = useConversationStore();
-    const handleCreateConversation = async () => {
-        if(selectedUsers.length === 0 ) return;
-        setIsLoading(true);
-        try {
-            const isGroup = selectedUsers.length > 1;
 
-            let conversationId;
-            if(!isGroup) {
-                conversationId = await createConversation({
-                    participants:[...selectedUsers,me?._id!],
-                    isGroup: false
-                })
-            } else {
-                const postUrl = await generateUploadUrl();
+	const handleCreateConversation = async () => {
+		if (selectedUsers.length === 0) return;
+		setIsLoading(true);
+		try {
+			const isGroup = selectedUsers.length > 1;
 
-                const result = await fetch(postUrl, {
-                    method: "POST",
-                    body: selectedImage,
-                })
+			let conversationId;
+			if (!isGroup) {
+				conversationId = await createConversation({
+					participants: [...selectedUsers, me?._id!],
+					isGroup: false,
+				});
+			} else {
+				const postUrl = await generateUploadUrl();
 
-                const {storageId} = await result.json();
+				const result = await fetch(postUrl, {
+					method: "POST",
+					headers: { "Content-Type": selectedImage?.type! },
+					body: selectedImage,
+				});
 
-                await createConversation({
-                    participants:[...selectedUsers,me?._id!],
-                    isGroup: true,
-                    groupName,
-                    groupImage: storageId,
-                    admin: me?._id,
-                });
-            }
+				const { storageId } = await result.json();
 
-            dialogCloseRef.current?.click();
-            setSelectedUsers([]);
+				conversationId = await createConversation({
+					participants: [...selectedUsers, me?._id!],
+					isGroup: true,
+					admin: me?._id!,
+					groupName,
+					groupImage: storageId,
+				});
+			}
+
+			dialogCloseRef.current?.click();
+			setSelectedUsers([]);
 			setGroupName("");
 			setSelectedImage(null);
 
-			//TODO update the global state called "selectedConversation" with the new conversation
+			// TODO => Update a global state called "selectedConversation"
+			const conversationName = isGroup ? groupName : users?.find((user) => user._id === selectedUsers[0])?.name;
 
+			setSelectedConversation({
+				_id: conversationId,
+				participants: selectedUsers,
+				isGroup,
+				image: isGroup ? renderedImage : users?.find((user) => user._id === selectedUsers[0])?.image,
+				name: conversationName,
+				admin: me?._id!,
+			});
+		} catch (err) {
+			toast.error("Failed to create conversation");
+			console.error(err);
+		} finally {
+			setIsLoading(false);
+		}
+	};
 
+	useEffect(() => {
+		if (!selectedImage) return setRenderedImage("");
+		const reader = new FileReader();
+		reader.onload = (e) => setRenderedImage(e.target?.result as string);
+		reader.readAsDataURL(selectedImage);
+	}, [selectedImage]);
 
-        } catch (err) {
-            toast.error("Failed to create conversation");
-        } finally {
-            setIsLoading(false);
-        }
-    }
-
-    useEffect(() => {
-        if(!selectedImage) return setRenderedImage('');
-        const reader = new FileReader();
-        reader.onload = (e) => setRenderedImage(e.target?.result as string);
-        reader.readAsDataURL(selectedImage);
-    },[selectedImage]);
-    
 	return (
 		<Dialog>
 			<DialogTrigger>
@@ -97,7 +107,7 @@ const UserListDialog = () => {
 			<DialogContent>
 				<DialogHeader>
 					{/* TODO: <DialogClose /> will be here */}
-                    <DialogClose ref= {dialogCloseRef} />
+					<DialogClose ref={dialogCloseRef} />
 					<DialogTitle>USERS</DialogTitle>
 				</DialogHeader>
 
@@ -108,13 +118,13 @@ const UserListDialog = () => {
 					</div>
 				)}
 				{/* TODO: input file */}
-                <input 
-                    type = "file"
-                    accept= 'image/*'
-                    ref={imgRef}
-                    hidden
-                    onChange={(e) => setSelectedImage(e.target.files![0])}
-                />
+				<input
+					type='file'
+					accept='image/*'
+					ref={imgRef}
+					hidden
+					onChange={(e) => setSelectedImage(e.target.files![0])}
+				/>
 				{selectedUsers.length > 1 && (
 					<>
 						<Input
@@ -165,14 +175,14 @@ const UserListDialog = () => {
 				<div className='flex justify-between'>
 					<Button variant={"outline"}>Cancel</Button>
 					<Button
-                        onClick={handleCreateConversation}
+						onClick={handleCreateConversation}
 						disabled={selectedUsers.length === 0 || (selectedUsers.length > 1 && !groupName) || isLoading}
 					>
 						{/* spinner */}
 						{isLoading ? (
 							<div className='w-5 h-5 border-t-2 border-b-2  rounded-full animate-spin' />
 						) : (
-							"Add"
+							"Create"
 						)}
 					</Button>
 				</div>
